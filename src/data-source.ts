@@ -8,18 +8,22 @@ export const AppDataSource = new DataSource({
   port: 5432,
   username: 'postgres',
   password: '123',
-  database: 'test',  
+  database: 'device_manager',  
   entities: [Product],
 //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
 //   entities: ['src/**/*.entity.ts'],
 //   migrations: ['src/migrations/*.ts'],
 //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-  synchronize: false,
-
+  synchronize: false,// tạo bảng lần đầu
 //   entities: [Product], 
-
-
 });
-console.log('Entities loaded:', AppDataSource.options.entities);
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!")
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization", err)
+    })
+// console.log('Entities loaded:', AppDataSource.options.entities);
 

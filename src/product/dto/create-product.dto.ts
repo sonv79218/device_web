@@ -1,12 +1,28 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { DeviceStatus } from '../entities/product.entity';
 
 export class CreateProductDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsNumber()
-  price: number;
+  @IsString()
+  @IsNotEmpty()
+  type: string;
 
+  @IsString()
+  @IsNotEmpty()
+  brand: string;
+
+  @IsEnum(['available', 'assigned', 'maintenance'])
   @IsOptional()
-  isAvailable?: boolean;
+  status?: DeviceStatus;
+
+  @IsString()
+  @IsNotEmpty()
+  serial_number: string;
+
+  @IsString()
+  @IsOptional()
+  note?: string;
 }

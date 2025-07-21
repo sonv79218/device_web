@@ -1,62 +1,62 @@
-// import { Injectable } from '@nestjs/common';
-// import { CreateProductDto } from './dto/create-product.dto';
-// import { UpdateProductDto } from './dto/update-product.dto';
-
-// @Injectable()
-// export class ProductService {
-//   create(createProductDto: CreateProductDto) {
-//     return 'This action adds a new product';
-//   }
-
-//   findAll() {
-//     return `This action returns all product`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} product`;
-//   }
-
-//   update(id: number, updateProductDto: UpdateProductDto) {
-//     return `This action updates a #${id} product`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} product`;
-//   }
-// }
-// src/product/product.service.ts
-import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
-
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { FilterProductDto } from './dto/query-filter.dto';
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
-    private repo: Repository<Product>,
+    private readonly productRepo: Repository<Product>,
   ) {}
 
-  create(dto: CreateProductDto) {
-    const product = this.repo.create(dto);
-    return this.repo.save(product);
+  async create(dto: CreateProductDto): Promise<Product> {
+    const product = this.productRepo.create(dto);
+    return await this.productRepo.save(product);
   }
 
-  findAll() {
-    return this.repo.find();
+  // async findAll(): Promise<Product[]> {
+  //   return await this.productRepo.find();
+  // }
+async findAll(query: FilterProductDto) {
+  const { type, status, page = 1, limit = 10 } = query;
+
+  const qb = this.productRepo.createQueryBuilder('product');
+
+  if (type) {
+    qb.andWhere('product.type = :type', { type });
   }
 
-  findOne(id: number) {
-    return this.repo.findOneBy({ id });
+  if (status) {
+    qb.andWhere('product.status = :status', { status });
   }
 
-  update(id: number, dto: UpdateProductDto) {
-    return this.repo.update(id, dto);
+  qb.orderBy('product.created_at', 'DESC')
+    .skip((page - 1) * limit)
+    .take(limit);
+
+  const products = await qb.getMany();
+  return products;
+}
+
+
+
+  async findOne(id: string): Promise<Product> {
+    const product = await this.productRepo.findOneBy({ device_id: id });
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
   }
 
-  remove(id: number) {
-    return this.repo.delete(id);
+  async update(id: string, dto: UpdateProductDto): Promise<Product> {
+    const product = await this.findOne(id);
+    Object.assign(product, dto);
+    return await this.productRepo.save(product);
+  }
+
+  async remove(id: string): Promise<void> {
+    const product = await this.findOne(id);
+    await this.productRepo.remove(product);
   }
 }
