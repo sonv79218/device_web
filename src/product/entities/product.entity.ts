@@ -1,8 +1,13 @@
 // src/product/entities/product.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { BorrowRequest } from 'src/borrow-request/entities/borrow-request.entity';
 export type DeviceStatus = 'available' | 'assigned' | 'maintenance';
 @Entity()
 export class Product {
+  // thuộc tính quan hệ
+  @OneToMany(() => BorrowRequest, br => br.product)
+borrowRequests: BorrowRequest[];
+  // thuộc tính bình thường
   @PrimaryGeneratedColumn('uuid')// uuid này là sao nhỉ
   device_id: string;
 

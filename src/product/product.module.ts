@@ -18,5 +18,7 @@ import { ProductController } from './product.controller';
   imports: [TypeOrmModule.forFeature([Product])],
   controllers: [ProductController],
   providers: [ProductService],
+  // export để cho borrow dùng module này với ??
+  exports:[TypeOrmModule],
 })
 export class ProductModule {}

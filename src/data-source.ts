@@ -2,6 +2,7 @@
 import { DataSource } from 'typeorm';
 import { Product } from './product/entities/product.entity';
 import { User } from './user/entities/user.entity';
+import { BorrowRequest } from './borrow-request/entities/borrow-request.entity';
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
@@ -9,7 +10,7 @@ export const AppDataSource = new DataSource({
   username: 'postgres',
   password: '123',
   database: 'device_manager',  
-  entities: [Product,User],
+  entities: [Product,User,BorrowRequest],
 //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
 //   entities: ['src/**/*.entity.ts'],
 //   migrations: ['src/migrations/*.ts'],
