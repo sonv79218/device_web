@@ -12,8 +12,8 @@ export class Product {
   @Column({ nullable: true })
   type: string;
 
-  @Column({ nullable: true }) // Cho phép null nếu không có giá trị
-    location: string;   
+  // @Column({ nullable: true }) // Cho phép null nếu không có giá trị
+  //   location: string;   
     
   @Column({ nullable: true })
   brand: string; // <- Đảm bảo dòng này tồn tại

@@ -1,7 +1,7 @@
 // src/data-source.ts
 import { DataSource } from 'typeorm';
 import { Product } from './product/entities/product.entity';
-
+import { User } from './user/entities/user.entity';
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
@@ -9,13 +9,13 @@ export const AppDataSource = new DataSource({
   username: 'postgres',
   password: '123',
   database: 'device_manager',  
-  entities: [Product],
+  entities: [Product,User],
 //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
 //   entities: ['src/**/*.entity.ts'],
 //   migrations: ['src/migrations/*.ts'],
 //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-  synchronize: false,// tạo bảng lần đầu
+  synchronize: true,// tạo bảng lần đầu
 //   entities: [Product], 
 });
 AppDataSource.initialize()
