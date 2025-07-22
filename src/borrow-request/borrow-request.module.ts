@@ -13,7 +13,6 @@ import { ProductModule } from 'src/product/product.module';
     UserModule, // 👈 để Nest biết UserRepository đến từ đâu
     ProductModule, // nếu dùng ProductRepository
   ],
-  
   controllers: [BorrowRequestController],
   providers: [BorrowRequestService],
 })
