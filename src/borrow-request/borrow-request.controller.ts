@@ -6,10 +6,13 @@ import { UpdateBorrowRequestDto } from './dto/update-borrow-request.dto';
 @Controller('borrow-request')
 export class BorrowRequestController {
   constructor(private readonly borrowRequestService: BorrowRequestService) {}
- @Post()
-create(@Body() createBorrowRequestDto: CreateBorrowRequestDto)
+  // truyền thêm dữ liệu qua param
+ @Post(':deviceId')
+create(
+  @Param('deviceId') deviceId: string,
+  @Body() createBorrowRequestDto: CreateBorrowRequestDto)
  {{
-  return this.borrowRequestService.create(createBorrowRequestDto);
+  return this.borrowRequestService.create(createBorrowRequestDto,deviceId);
 }
 }
 

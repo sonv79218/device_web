@@ -20,6 +20,8 @@ export class BorrowRequest {
   user: User;
 
   @ManyToOne(() => Product, (product) => product.borrowRequests)
+  // để xuất dữ liệu
+  @JoinColumn({ name: 'device_id' })
   product: Product;
 
 

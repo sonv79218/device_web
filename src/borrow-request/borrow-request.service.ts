@@ -18,14 +18,24 @@ export class BorrowRequestService {
     @InjectRepository(Product)
     private productRepo: Repository<Product>,
   ) {}
-  
-  async create(dto: CreateBorrowRequestDto) {
+  // tạo request-borrow
+  async create(dto: CreateBorrowRequestDto, deviceId: string) {
+    // tìm xem có id-device nào phù hợp với id-device truyền vào k
+    const device = await this.productRepo.findOneBy({ device_id: deviceId });
+      if (!device) {
+    throw new NotFoundException('Device not found');
+  }
+    
   const newRequest = this.borrowRequestRepo.create({
     ...dto,
+    product: device, // product là quan hệ ManyToOne với Product entity
   });
   return await this.borrowRequestRepo.save(newRequest);
 }
    async findAll(): Promise<BorrowRequest[]> {
-    return await this.borrowRequestRepo.find();
+    return await this.borrowRequestRepo.find({
+      // thêm cả bảng product khi in ra 
+  relations: ['product'], // <- thêm dòng này
+});
   }
 }
