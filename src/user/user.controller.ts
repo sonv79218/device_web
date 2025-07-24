@@ -21,26 +21,12 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(id);// ép sang + nhưng không cần nữa
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.userService.remove(+id);
-  // }
-
+// đăng ký
   @Post('register')
   register(@Body() dto: CreateUserDto) {
     return this.userService.register(dto);
   }
-
+// đăng nhập
     @Post('login')
   login(@Body() dto: LoginUserDto) {
     return this.userService.login(dto);

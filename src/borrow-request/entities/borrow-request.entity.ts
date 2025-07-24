@@ -33,7 +33,7 @@ export class BorrowRequest {
   expectedReturnDate: Date;
 
   @Column({ default: 'pending' })
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending'|'approved'| 'rejected'|'returned';
 
   @CreateDateColumn()
   createdAt: Date;
