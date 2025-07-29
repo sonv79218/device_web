@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards,Request , Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards,Request , Req, ParseUUIDPipe} from '@nestjs/common';
 import { BorrowRequestService } from './borrow-request.service';
 import { CreateBorrowRequestDto } from './dto/create-borrow-request.dto';
 import { UpdateBorrowRequestDto } from './dto/update-borrow-request.dto';
@@ -9,15 +9,17 @@ import { AdminGuard } from 'src/auth/jwt-admin.guard';
 @Controller('borrow-request')
 
 export class BorrowRequestController {
-  constructor(private readonly borrowRequestService: BorrowRequestService) {}
+  constructor(private readonly borrowRequestService: BorrowRequestService) {}// khai báo constructor để sử dụng service 
 
   // tạo yêu cầu mượn - chỉ người dùng mới đc mượn
   // sử dụng useGuards để xử lý token 
   @UseGuards(JwtAuthGuard,UserGuard)
  @Post(':deviceId')
   create(
-  @Param('deviceId') deviceId: string,
-  @Body() createBorrowRequestDto: CreateBorrowRequestDto,
+    
+  @Param('deviceId',new ParseUUIDPipe()) deviceId: string,
+  // @Param('id', new ParseUUIDPipe()) id: string,
+  @Body() createBorrowRequestDto: CreateBorrowRequestDto, 
   @User() user: any)
  {{
   return this.borrowRequestService.create(createBorrowRequestDto,deviceId,user.userId);
@@ -27,7 +29,8 @@ export class BorrowRequestController {
 @UseGuards(JwtAuthGuard,AdminGuard)
 @Patch('approve/:id') // lấy id của borrow và duyệt 
 async approve(
-  @Param('id') id: string,
+  // @Param('id') id: string,
+  @Param('id', new ParseUUIDPipe()) id: string,
   @User() user: any,
 ){
   return this.borrowRequestService.approveRequest(id,user.userId);
@@ -36,7 +39,8 @@ async approve(
 @UseGuards(JwtAuthGuard,AdminGuard)
 @Patch('reject/:id') // lấy id của borrow và duyệt 
 async reject(
-  @Param('id') id: string,
+  // @Param('id') id: string, 
+  @Param('id', new ParseUUIDPipe()) id: string,
   @User() user: any,
 ){
   return this.borrowRequestService.rejectRequest(id,user.userId);
@@ -46,7 +50,8 @@ async reject(
 @UseGuards(JwtAuthGuard,UserGuard)
 @Patch('return/:id')// truyền vào id borrow
 async returnDevice(
-  @Param('id') id: string,
+  // @Param('id') id: string,
+  @Param('id', new ParseUUIDPipe()) id: string,
   @User() user: any,
 ) {
   // console.log(user.userId);

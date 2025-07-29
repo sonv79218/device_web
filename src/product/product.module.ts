@@ -1,13 +1,4 @@
-// import { Module } from '@nestjs/common';
-// import { ProductService } from './product.service';
-// import { ProductController } from './product.controller';
 
-// @Module({
-//   controllers: [ProductController],
-//   providers: [ProductService],
-// })
-// export class ProductModule {}
-// src/product/product.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
@@ -15,7 +6,7 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])],
+  imports: [TypeOrmModule.forFeature([Product])], // nhờ vào phần này có thể import các repository vào service
   controllers: [ProductController],
   providers: [ProductService],
   // export để cho borrow dùng module này với ??

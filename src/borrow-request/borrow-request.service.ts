@@ -6,17 +6,18 @@ import { CreateBorrowRequestDto } from './dto/create-borrow-request.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { BadRequestException,ForbiddenException } from '@nestjs/common';
-@Injectable()
+@Injectable()//dùng để đánh dấu class là provider
 export class BorrowRequestService {
   constructor(
-    @InjectRepository(BorrowRequest)
-    private borrowRequestRepo: Repository<BorrowRequest>,
-
+    
+    @InjectRepository(BorrowRequest) //dùng để inject Repository của một entity (TypeORM)
+    private borrowRequestRepo: Repository<BorrowRequest>, 
+//cấp quyền truy cập kho dữ liệu User từ hệ thống TypeORM -> sau đó có thể truy cập  this.userRepo.find(), save(), delete()...
     @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private userRepo: Repository<User>,// sử dụng tìm người dùng dựa vào id
 
     @InjectRepository(Product)
-    private productRepo: Repository<Product>,
+    private productRepo: Repository<Product>,// sử dụng để tìm sản phẩm dựa vào id 
   ) {}
   // tạo yêu cầu mượn 
   // truyền vào deviceId và userId; kiểm tra tồn tại, kiểm tra đã mượn chưa, nếu chưa thì gửi yêu cầu mượn
