@@ -7,6 +7,9 @@ import { UserModule } from './user/user.module';
 import { BorrowRequestModule } from './borrow-request/borrow-request.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config'; // module config đc cài sẵn trong nestjs 
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './common/guards/roles.guard';
+import { AuthGuard } from './auth/auth.guard';
 @Module({
   imports: [
     // tùy chỉnh configmodule
@@ -22,5 +25,16 @@ import { ConfigModule } from '@nestjs/config'; // module config đc cài sẵn t
     BorrowRequestModule,
     AuthModule,
   ],
+
+providers: [{ 
+    provide: APP_GUARD, // chỉ định chạy trên toàn bộ ứng dụng  - trừ khi viết đè lên
+    useClass: AuthGuard, // sử dụng AuthGuard làm mặc định 
+  },
+  {
+    provide: APP_GUARD,
+    useClass: RolesGuard,
+  },
+],
+  
 })
 export class AppModule {}

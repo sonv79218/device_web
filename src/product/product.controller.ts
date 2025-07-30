@@ -16,11 +16,14 @@ import { UpdateProductDto } from './dto/update-product.dto';
 // import { ParseUUIDPipe } from './pipes/parse-uuid.pipe';// đường dẫn bạn điều chỉnh theo thư mục
 import { Query, ValidationPipe } from '@nestjs/common';
 import { FilterProductDto } from './dto/query-filter.dto';
+import { Role } from 'src/common/enums/role.enum';
+import { Roles } from 'src/common/decorators/roles.decorator';
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
-// tạo thiết bị mới
+// tạo thiết bị mới - chỉ admin mới được tạo
   @Post()
+  @Roles(Role.Admin)
   async create(@Body() createProductDto: CreateProductDto) {// lấy dữ liệu gửi vào từ nhập liệu - body và phải hợp lệ với DTO
     return await this.productService.create(createProductDto);
   }

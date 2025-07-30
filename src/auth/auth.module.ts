@@ -3,20 +3,23 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './jwt.strategy';
+// import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
-
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { jwtConstants } from './constants';
+import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [
+    UserModule,
     PassportModule,
     JwtModule.register({
-      secret: 'JWT_SECRET', // dùng env
+      secret: jwtConstants.secret, 
       signOptions: { expiresIn: '1d' },
-    // signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') || '1d' },
     }),
     ConfigModule,
   ],
-  providers: [JwtStrategy], // đã được cho vào module nên có thể tìm và dùng authGuard('jwt)
-  exports: [JwtModule], // để module khác import dùng
+  providers: [ AuthService,], // đã được cho vào module nên có thể tìm và dùng authGuard('jwt)
+  exports: [JwtModule, AuthService], controllers: [AuthController], // để module khác import dùng
 })
 export class AuthModule {}
