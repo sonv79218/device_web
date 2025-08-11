@@ -23,13 +23,66 @@ export class BorrowRequestController {
   @Param('deviceId',new ParseUUIDPipe()) deviceId: string,
   // @Param('id', new ParseUUIDPipe()) id: string,
   @Body() createBorrowRequestDto: CreateBorrowRequestDto, 
-  @User() user: any)
+  @User() user: any
+)
  {{
-  return this.borrowRequestService.create(createBorrowRequestDto,deviceId,user.userId);
+  return this.borrowRequestService.create(createBorrowRequestDto,deviceId,user.sub);
 }
+}
+
+// borrow-request.controller.ts
+@Get('me')
+@Roles(Role.User)
+async getMyBorrowRequests(
+  @Req() req,
+  @User() user: any,) {
+    // console.log(user.sub)
+  return this.borrowRequestService.findByUser(user.sub);
+}
+// xóa yêu cầu 
+@Delete(':id')
+@Roles(Role.User)
+async deleteMyRequest(
+  @Param('id') borrowRequestId: string,
+  @Request() req
+) {
+  const userId = req.user.id; // Lấy từ JWT
+  return this.borrowRequestService.deleteMyRequest(borrowRequestId, userId);
+}
+
+
+// đã được duyêt
+@Get('my')
+@Roles(Role.User)
+async getMyProduct(
+  @Req() req,
+  @User() user: any,) {
+    // console.log(user.sub)
+  return this.borrowRequestService.findByUserProduct(user.sub);
 }
 // duyệt - chỉ admin mới duyệt
 // @UseGuards(JwtAuthGuard,AdminGuard)
+
+// lấy đã được sử dụng xong
+// đã được duyêt
+@Get('my_return')
+@Roles(Role.User)
+async getMyReturned(
+  @Req() req,
+  @User() user: any,) {
+    // console.log(user.sub)
+  return this.borrowRequestService.findByUserProductReturn(user.sub);
+}
+
+// lấy đã từ chối
+@Get('my_reject')
+@Roles(Role.User)
+async getMyReject(
+  @Req() req,
+  @User() user: any,) {
+    // console.log(user.sub)
+  return this.borrowRequestService.findByUserProductReject(user.sub);
+}
 
 @Patch('approve/:id') // lấy id của borrow và duyệt 
 @Roles(Role.Admin)
@@ -43,7 +96,7 @@ async approve(
 // từ chối 
 // @UseGuards(JwtAuthGuard,AdminGuard)
 @Patch('reject/:id') // lấy id của borrow và duyệt 
-@Roles(Role.User)
+@Roles(Role.Admin)
 async reject(
   // @Param('id') id: string, 
   @Param('id', new ParseUUIDPipe()) id: string,
@@ -55,14 +108,14 @@ async reject(
 // trả - lấy dữ liệu người dùng và sửa trạng thái trong bảng borrow - cập nhật trạng thái trong bảng product là status thành avaiable
 // @UseGuards(JwtAuthGuard,UserGuard)
 @Patch('return/:id')// truyền vào id borrow
-@Roles(Role.Admin)
+@Roles(Role.User)
 async returnDevice(
   // @Param('id') id: string,
   @Param('id', new ParseUUIDPipe()) id: string,
-  @User() user: any,
+  // @User() user: any,
 ) {
   // console.log(user.userId);
-  return this.borrowRequestService.returnDeviceById(id, user.userId);
+  return this.borrowRequestService.returnDeviceById(id);
 }
 
 

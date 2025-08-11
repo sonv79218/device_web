@@ -6,13 +6,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from './public.decorator';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private reflector: Reflector) {}
+  constructor(private jwtService: JwtService, private reflector: Reflector,private configService: ConfigService,) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     
@@ -31,12 +31,11 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-        // console.log(token);
-        // console.log(jwtConstants.secret);
       const payload = await this.jwtService.verifyAsync(
         token,
         {
-          secret: jwtConstants.secret,
+          // secret: jwtConstants.secret,// phần này cũng lấy từ env
+          secret: this.configService.get<string>('JWT_SECRET'),
         }
       );
       request['user'] = payload;

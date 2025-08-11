@@ -22,8 +22,9 @@ export class AuthController {
 async register(@Body() RegisterDto: RegisterDto) {
   return this.authService.register(RegisterDto);
 }
+
 @Public()
-  @HttpCode(HttpStatus.OK)
+  // @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() SignInDto: signInDto) {
     return this.authService.signIn(SignInDto);

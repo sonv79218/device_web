@@ -16,14 +16,17 @@ export class BorrowRequest {
 
 
 // quan hệ bảng 
-  @ManyToOne(() => User, (user) => user.borrowRequests)
-  user: User;
+@ManyToOne(() => User, (user) => user.borrowRequests)
+@JoinColumn({ name: 'user_id' })
+user: User;
 
-  @ManyToOne(() => Product, (product) => product.borrowRequests)
+  
+@ManyToOne(() => Product, (product) => product.borrowRequests, {
+  onDelete: 'CASCADE',
+})
   // để xuất dữ liệu
   @JoinColumn({ name: 'device_id' })
   product: Product;
-
 
 // thuộc tính bình thường
   @Column({ type: 'text' })

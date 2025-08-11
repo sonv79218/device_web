@@ -11,13 +11,8 @@ export const AppDataSource = new DataSource({
   password: '123',
   database: 'device_manager',  
   entities: [Product,User,BorrowRequest],
-//   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-//   entities: ['src/**/*.entity.ts'],
-//   migrations: ['src/migrations/*.ts'],
-//   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
   synchronize: true,// tạo bảng lần đầu
-//   entities: [Product], 
 });
 AppDataSource.initialize()
     .then(() => {
@@ -26,5 +21,4 @@ AppDataSource.initialize()
     .catch((err) => {
         console.error("Error during Data Source initialization", err)
     })
-// console.log('Entities loaded:', AppDataSource.options.entities);
 

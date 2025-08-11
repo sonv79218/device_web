@@ -4,7 +4,7 @@ import { BorrowRequest } from 'src/borrow-request/entities/borrow-request.entity
 export type UserRole = 'user' | 'admin';
 @Entity()
 export class User {
-    // thuộc tính quan hệ
+    // thuộc tính quan hệ - 1 người có nhiều yêu cầu mượn
 @OneToMany(() => BorrowRequest, br => br.user)
 borrowRequests: BorrowRequest[];
 

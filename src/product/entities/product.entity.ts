@@ -4,9 +4,10 @@ import { BorrowRequest } from 'src/borrow-request/entities/borrow-request.entity
 export type DeviceStatus = 'available' | 'assigned' | 'maintenance';
 @Entity()
 export class Product {
-  // thuộc tính quan hệ
+  // thuộc tính quan hệ - 1 sản phẩm có nhiều lượt mượn
   @OneToMany(() => BorrowRequest, br => br.product)
-borrowRequests: BorrowRequest[];
+  borrowRequests: BorrowRequest[];
+  
   // thuộc tính bình thường
   @PrimaryGeneratedColumn('uuid')// uuid này là sao nhỉ
   device_id: string;

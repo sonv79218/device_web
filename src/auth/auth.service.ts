@@ -17,16 +17,16 @@ export class AuthService {
       private usersService: UserService, 
        private jwtService: JwtService) {}
 // hàm đăng nhập 
-
   async signIn(signInDto: signInDto): 
-        Promise<{ access_token: string }> {
+        Promise<{ access_token: string,user: { sub: string, email: string, name: string, role: string } }> {
     const user = await this.usersService.findOne(signInDto.email); // dùng email và mật khẩu cho riêng tư
     if (user?.password !== signInDto.password) {
       throw new UnauthorizedException();
     }
     const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };// thêm thuộc tính tên và quyền 
-    return {
+    return {     
       access_token: await this.jwtService.signAsync(payload), // dùng hàm signAsync mã hóa payload
+      user: payload
     };
   }
 // hàm đăng ký
@@ -40,9 +40,12 @@ export class AuthService {
     const existing = await this.userRepository.findOneBy({ email: dto.email });
     if (existing) throw new ConflictException('Email already exists');
 // mã hóa mật khẩu
-    const hashed = await bcrypt.hash(dto.password, 10);
-    const user = this.userRepository.create({ ...dto, password: hashed });
+    // const hashed = await bcrypt.hash(dto.password, 10);
+    const user = this.userRepository.create({ ...dto, password:dto.password});
     await this.userRepository.save(user);
-    return { message: 'User registered successfully' };
+    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };// thêm thuộc tính tên và quyền 
+    return {
+      access_token: await this.jwtService.signAsync(payload), // dùng hàm signAsync mã hóa payload
+    };
   }
 }

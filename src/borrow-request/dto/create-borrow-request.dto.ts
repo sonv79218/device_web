@@ -1,4 +1,4 @@
-import { IsUUID, IsString, IsDateString } from 'class-validator';
+import { IsUUID, IsString, IsDateString,IsOptional, } from 'class-validator';
 
 export class CreateBorrowRequestDto {
 //   @IsUUID()
@@ -7,6 +7,7 @@ export class CreateBorrowRequestDto {
   @IsString()
   note: string;
 
+@IsOptional()
   @IsDateString()
-  expected_return_date: string; // ISO 8601 string, ex: "2025-07-31"
+  expected_return_date?: string; // ISO 8601 string, ex: "2025-07-31"
 }

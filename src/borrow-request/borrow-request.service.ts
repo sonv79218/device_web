@@ -20,9 +20,17 @@ export class BorrowRequestService {
     private productRepo: Repository<Product>,// sử dụng để tìm sản phẩm dựa vào id 
   ) {}
   // tạo yêu cầu mượn 
+  
   // truyền vào deviceId và userId; kiểm tra tồn tại, kiểm tra đã mượn chưa, nếu chưa thì gửi yêu cầu mượn
   async create(dto: CreateBorrowRequestDto, deviceId: string, userId: string) {
     // tìm xem có id-device nào phù hợp với id-device truyền vào k - phải là kiểu uuid 
+    const expectedReturnDate = new Date();
+  expectedReturnDate.setDate(expectedReturnDate.getDate() + 7); // 7 ngày sau
+
+    // console.log(userId);
+    // console.log(deviceId);
+    // console.log(dto);
+    
     const device = await this.productRepo.findOneBy({ device_id: deviceId });
       if (!device) {
     throw new NotFoundException('Device not found');
@@ -46,6 +54,7 @@ export class BorrowRequestService {
   if (existing) {
     throw new BadRequestException('Bạn đã gửi yêu cầu mượn thiết bị này rồi và đang chờ xử lý');
   }
+  
   const newRequest = this.borrowRequestRepo.create({
     ...dto,
     product: { device_id: device.device_id },
@@ -150,7 +159,7 @@ if (request.status !== 'pending') {
 }
 
 // trả sản phẩm
-async returnDeviceById(borrowRequestId: string, userId: string) {
+async returnDeviceById(borrowRequestId: string) {
   // tìm xem có request trong bảng k
   const request = await this.borrowRequestRepo.findOne({
     where: {
@@ -163,9 +172,9 @@ async returnDeviceById(borrowRequestId: string, userId: string) {
     throw new NotFoundException('Borrow request not found');
   }
   // check userid - người mượn mới được trả
-  if (request.user.id !== userId) {
-    throw new ForbiddenException('You are not allowed to return this device');
-  }
+  // if (request.user.id !== userId) {
+  //   throw new ForbiddenException('You are not allowed to return this device');
+  // }
   // Tìm product liên quan
   const product = await this.productRepo.findOne({
     where: { device_id: request.product.device_id }, // hoặc request.productId
@@ -193,9 +202,80 @@ async findAll(): Promise<any[]> { // khai báo 1 hàm đồng bộ trả về m�
     .select([ // xác định các trường muốn lấy
       'borrowRequest',
       'user.id',
-      'product.device_id'
+      'user.name', 
+      'product.device_id',
+      'product.name'  
     ])
     .getMany();
+}
+
+async findByUser(userId: string) {
+  // console.log(userId);
+  return await this.borrowRequestRepo.find({
+    where: {
+      user: { id: userId }, // Vì là quan hệ ManyToOne
+      status: 'pending',
+    },
+    relations: ['product'], // để lấy product.device_id
+  });
+}
+
+async findByUserProduct(userId: string) {
+  // console.log(userId);
+  return await this.borrowRequestRepo.find({
+    where: {
+      user: { id: userId }, // Vì là quan hệ ManyToOne
+      status: 'approved',
+    },
+    relations: ['product'], // để lấy product.device_id
+  });
+}
+
+async findByUserProductReturn(userId: string) {
+  // console.log(userId);
+  return await this.borrowRequestRepo.find({
+    where: {
+      user: { id: userId }, // Vì là quan hệ ManyToOne
+      status: 'returned',
+    },
+    relations: ['product'], // để lấy product.device_id
+  });
+}
+async findByUserProductReject(userId: string) {
+  // console.log(userId);
+  return await this.borrowRequestRepo.find({
+    where: {
+      user: { id: userId }, // Vì là quan hệ ManyToOne
+      status: 'rejected',
+    },
+    relations: ['product'], // để lấy product.device_id
+  });
+}
+
+// xóa yêu cầu của cá nhân
+async deleteMyRequest(borrowRequestId: string, userId: string) {
+  // Tìm request của chính user
+  const request = await this.borrowRequestRepo.findOne({
+    where: {
+      id: borrowRequestId,
+      user: { id: userId },
+    },
+    relations: ['user', 'product'],
+  });
+
+  if (!request) {
+    throw new NotFoundException('Không tìm thấy yêu cầu hoặc bạn không có quyền xóa.');
+  }
+
+  // Chỉ được xóa khi đang pending
+  if (request.status !== 'pending') {
+    throw new BadRequestException('Chỉ có thể xóa yêu cầu đang chờ xử lý.');
+  }
+
+  // Tiến hành xóa
+  await this.borrowRequestRepo.remove(request);
+
+  return { message: 'Đã xóa yêu cầu mượn thành công.' };
 }
 
 }

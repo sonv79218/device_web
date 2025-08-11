@@ -12,6 +12,10 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
+    app.enableCors({
+    origin: 'http://localhost:3000', // Cho phép frontend React
+    credentials: true, // Nếu frontend dùng cookie hoặc header Authorization
+  });
   await app.listen(process.env.PORT ?? 3000); // port 
 }
 bootstrap();

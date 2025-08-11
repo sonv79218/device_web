@@ -36,6 +36,13 @@ async findAll(
   return this.productService.findAll(query);
 }
 
+@Get('filters')
+getFilters() {
+  return this.productService.getAllTypesAndStatuses();
+}
+
+
+
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe()) id: string) {// middleware kiểm tra id 
     const product = await this.productService.findOne(id);
@@ -46,6 +53,7 @@ async findAll(
   }
 
   @Patch(':id')
+  @Roles(Role.Admin)
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -54,6 +62,7 @@ async findAll(
   }
 
   @Delete(':id')
+  @Roles(Role.Admin)
   async remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.productService.remove(id);
   }
