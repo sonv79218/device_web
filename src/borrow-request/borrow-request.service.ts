@@ -63,61 +63,49 @@ export class BorrowRequestService {
   });
   return await this.borrowRequestRepo.save(newRequest);
 }
-// duyệt 
-async approveRequest(borrowRequestId: string, userId: string){
-    // tìm xem có request trong bảng k
-  const request = await this.borrowRequestRepo.findOne({
-    where: {
-      id: borrowRequestId,
-    },
-    relations: ['user','product'],
-  });
+// duyệt  - thay thành transaction để gói cả hai bước vào một khối
+async approveRequest(borrowRequestId: string, userId: string) {
+  return await this.borrowRequestRepo.manager.transaction(async (manager) => {
+    // Tìm request
+    const request = await manager.findOne(BorrowRequest, {
+      where: { id: borrowRequestId },
+      relations: ['user', 'product'],
+    });
 
-  if (!request) {
-    throw new NotFoundException('Borrow request not found');
-  }
-  // // check userid 
-  // if (request.user.id !== userId) {
-  //   throw new ForbiddenException('You are not allowed to return this device');
-  // }
+    if (!request) {
+      throw new NotFoundException('Borrow request not found');
+    }
 
+    // Nếu yêu cầu không ở trạng thái pending
+    if (request.status !== 'pending') {
+      if (request.status === 'approved') throw new BadRequestException('Yêu cầu này đã được chấp nhận trước đó');
+      if (request.status === 'rejected') throw new BadRequestException('Yêu cầu này đã bị từ chối');
+      if (request.status === 'returned') throw new BadRequestException('Người mượn đã mượn thành công và đã trả rồi');
+      throw new BadRequestException('Only pending requests can be approved');
+    }
 
-  // chỉ có trạng thái là pending thì mới được chấp nhận 
-// cập nhật status trong request
-  // Tìm product liên quan
-  // console.log(request.product.device_id);// không đọc được device id 
-  const product = await this.productRepo.findOne({
-    where: { device_id: request.product.device_id }, // hoặc request.productId
-  });
+    // Tìm product liên quan
+    const product = await manager.findOne(Product, {
+      where: { device_id: request.product.device_id },
+    });
+
     if (!product) {
-    throw new NotFoundException('Product not found');
-  }
+      throw new NotFoundException('Product not found');
+    }
 
-// Nếu yêu cầu đã được chấp nhận hoặc từ chối rồi thì không được xử lý lại
-if (request.status === 'approved') {
-  throw new BadRequestException('Yêu cầu này đã được chấp nhận trước đó');
+    // Cập nhật trạng thái request
+    request.status = 'approved';
+    await manager.save(request);
+
+    // Cập nhật trạng thái product
+    product.status = 'assigned';
+    await manager.save(product);
+
+    return { message: 'Yêu cầu được đồng ý và cập nhật trạng thái thiết bị là đã cho mượn' };
+  });
 }
 
-if (request.status === 'rejected') {
-  throw new BadRequestException('Yêu cầu này đã bị từ chối');
-}
-if (request.status === 'returned') {
-  throw new BadRequestException('người mượn đã mượn thành công và đã trả rồi');
-}
-if (request.status !== 'pending') {
-  throw new BadRequestException('Only pending requests can be approved');
-}
-  // console.log(product.status);
-  request.status = 'approved';
-   await this.borrowRequestRepo.save(request);
-    // Cập nhật trạng thái device
-  // request.product.status = 'assigned'; // hoặc 'available' tuỳ logic của bạn
-   product.status = 'assigned'; // hoặc 'assigned', tuỳ logic của bạn
-  // request.returnedAt = new Date(); // nếu bạn có cột returnedAt
-  await this.productRepo.save(product);
-   return { message: 'yêu cầu được đồng ý và cập nhật trạng thái thiết bị là đã cho mượn' };
-}
-// duyệt 
+
 async rejectRequest(borrowRequestId: string, userId: string){
   // tìm xem có request trong bảng k
   const request = await this.borrowRequestRepo.findOne({
@@ -160,39 +148,42 @@ if (request.status !== 'pending') {
 
 // trả sản phẩm
 async returnDeviceById(borrowRequestId: string) {
-  // tìm xem có request trong bảng k
-  const request = await this.borrowRequestRepo.findOne({
-    where: {
-      id: borrowRequestId,
-    },
-    relations: ['user','product'],
-  });
+  return await this.borrowRequestRepo.manager.transaction(async (manager) => {
+    // 1. Tìm request
+    const request = await manager.findOne(BorrowRequest, {
+      where: { id: borrowRequestId },
+      relations: ['user', 'product'],
+    });
 
-  if (!request) {
-    throw new NotFoundException('Borrow request not found');
-  }
-  // check userid - người mượn mới được trả
-  // if (request.user.id !== userId) {
-  //   throw new ForbiddenException('You are not allowed to return this device');
-  // }
-  // Tìm product liên quan
-  const product = await this.productRepo.findOne({
-    where: { device_id: request.product.device_id }, // hoặc request.productId
-  });
+    if (!request) {
+      throw new NotFoundException('Borrow request not found');
+    }
+
+    // 2. Nếu đã trả rồi thì không được trả tiếp
+    if (request.status === 'returned') {
+      throw new BadRequestException('Bạn đã trả rồi');
+    }
+
+    // 3. Tìm product liên quan
+    const product = await manager.findOne(Product, {
+      where: { device_id: request.product.device_id },
+    });
+
     if (!product) {
-    throw new NotFoundException('Product not found');
-  }
-  // Nếu đã trả rồi thì không được trả tiếp
-if (request.status === 'returned') {
-  throw new BadRequestException('bạn đã trả rồi');
+      throw new NotFoundException('Product not found');
+    }
+
+    // 4. Cập nhật trạng thái
+    request.status = 'returned';
+    await manager.save(request);
+
+    product.status = 'available';
+    await manager.save(product);
+
+    return { message: 'Trả thành công và cập nhật trạng thái thiết bị là đã sẵn sàng' };
+  });
 }
-  request.status = 'returned';
-  await this.borrowRequestRepo.save(request);
-    // Cập nhật trạng thái device
-   product.status = 'available'; 
-  await this.productRepo.save(product);
-  return { message: 'trả thành công và cập nhật trạng thái thiết bị là đã sẵn sàng' };
-}
+
 
 async findAll(): Promise<any[]> { // khai báo 1 hàm đồng bộ trả về mảng any 
   return await this.borrowRequestRepo // truy cập borrowRequestRepo 

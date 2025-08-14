@@ -63,6 +63,17 @@ async toggleRole(
   return this.userService.toggleRole(id);
 }
 
+// ban và bỏ ban 
+// user.controller.ts
+@Patch(':id/toggle-active')
+@Roles(Role.Admin)
+async toggleActive(
+  @Param('id', ParseUUIDPipe) id: string,
+) {
+  return this.userService.toggleActive(id);
+}
+
+
 }
 
 

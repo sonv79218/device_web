@@ -35,4 +35,10 @@ async register(@Body() RegisterDto: RegisterDto) {
   getProfile(@Request() req) {
     return req.user;
   }
+  // đăng ký token cần hủy hiệu lực 
+  @Post()
+  logOut(@Request() req){
+    const token = req.headers['authorization']?.replace('Bearer ', '');
+    return this.authService.logOut(token);
+  }
 }

@@ -1,26 +1,40 @@
-import { Injectable, NotFoundException,InternalServerErrorException } from '@nestjs/common';
+import {  Inject,Injectable, NotFoundException,InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilterProductDto } from './dto/query-filter.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
+     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(dto: CreateProductDto): Promise<Product> {
     const product = this.productRepo.create(dto);
-    return await this.productRepo.save(product);
+    // return await this.productRepo.save(product);
+        const saved = await this.productRepo.save(product);
+    // ❌ Xóa cache liên quan để dữ liệu mới được lấy lại
+    await this.cacheManager.del('products:all');
+    return saved;
   }
 
   // async findAll(): Promise<Product[]> {
   //   return await this.productRepo.find();
   // }
 async findAll(query: FilterProductDto) {
+  // nếu có cache
+      const cacheKey = `products:${JSON.stringify(query)}`;
+    const cachedData = await this.cacheManager.get(cacheKey);
+    if (cachedData){
+      // console.log('lấy từ cache ')
+       return cachedData};
+    // nếu không 
   const { type, status, page , limit } = query;
 
   const qb = this.productRepo.createQueryBuilder('product');
@@ -40,17 +54,28 @@ const totalCount = await qb.getCount();
     .take(limit);
 
   const products = await qb.getMany();
-    return {
-    data: products,
-    totalCount,
-  };
+    const result = { data: products, totalCount };
+    // ✅ Lưu cache với TTL 60 giây
+    await this.cacheManager.set(cacheKey, result, 60);
+  //   return {
+  //   data: products,
+  //   totalCount,
+  // };
+   return result;
 }
 
 
 
   async findOne(id: string): Promise<Product> {
+        const cacheKey = `product:${id}`;
+    const cachedProduct = await this.cacheManager.get<Product>(cacheKey);
+      if (cachedProduct) {console.log(`lấy sản phẩm ${cacheKey}`)
+        return cachedProduct};
+      // nếu không có trong cache thì 
+      console.log('hello')
     const product = await this.productRepo.findOneBy({ device_id: id });
     if (!product) throw new NotFoundException('Product not found');
+     await this.cacheManager.set(cacheKey, product, 60000);
     return product;
   }
   

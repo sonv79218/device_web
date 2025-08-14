@@ -26,4 +26,8 @@ borrowRequests: BorrowRequest[];
 
   @Column()
   password: string;
+
+      // Thêm cột active
+    @Column({ type: 'boolean', default: true })
+    active: boolean; // true = người dùng hoạt động, false = bị ban
 }

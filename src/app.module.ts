@@ -1,5 +1,7 @@
 // src/app.module.ts
-import { Module } from '@nestjs/common';
+import { Module} from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './product/product.module';
 import { AppDataSource } from './data-source';
@@ -15,8 +17,13 @@ import { User } from './user/entities/user.entity';
 import { BorrowRequest } from './borrow-request/entities/borrow-request.entity';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
+// import * as redisStore from 'cache-manager-ioredis-yet';
 @Module({
   imports: [
+    CacheModule.register({
+      // ttl: 0, // TTL mặc định
+      isGlobal: true, // ✅ toàn cục
+    }),
     // tùy chỉnh configmodule
     ConfigModule.forRoot({// module cho phép bạn đọc .env và tự cấu hình hệ thống theo biến môi trường.
       isGlobal: true,
